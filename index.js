@@ -34,10 +34,10 @@ Geonames.prototype.findByLocation = function(location, utc_offset, cb) {
 	var coords = location.match(/(\-?\d+(\.\d+)?),\s*(\-?\d+(\.\d+)?)/);
 
 	if (coords && coords.length == 5) {
-		console.log('>> By Coords');
+		//console.log('>> By Coords');
 		Geoname.findByCoords(parseFloat(coords[3]), parseFloat(coords[1]), 1, function(err, results) {
 			if (err) return cb(err);
-			console.log(' ---', location, results);
+			//console.log(' ---', location, results);
 			if (results && results.length > 0) {
 				cb(null, results[0]);
 			}
@@ -65,27 +65,22 @@ Geonames.prototype.findByLocation = function(location, utc_offset, cb) {
 						console.log(' >> By UTC Offset ', results[0]);
 						winners.push(results[0]);
 						found = true;
-						winnersByName = []; //ignore winners found by name
+					}
+					Geoname.findByName(location, 1, function(err, results) {
+						if (err) return next(err);
+						if (results && results.length > 0) {
+							console.log(' >> By Name ', results[0]);
+							winnersByName.push(results[0]);
+						}
 						next();
-					}
-					else if (!found) { //consider by name only if utc offset don't match anything
-						Geoname.findByName(location, 1, function(err, results) {
-							if (err) return next(err);
-							if (results && results.length > 0) {
-								console.log(' >> By Name ', results[0]);
-								winnersByName.push(results[0]);
-							}
-							next();
-						});
-					}
-					else next();	
+					});
 				});
 			}
 			else {
 				Geoname.findByName(location, 1, function(err, results) {
 					if (err) return next(err);
 					if (results && results.length > 0) {
-						console.log(' >> By Name ', results[0]);
+						//console.log(' >> By Name ', results[0]);
 						winners.push(results[0]);
 					}
 					next();
@@ -93,11 +88,16 @@ Geonames.prototype.findByLocation = function(location, utc_offset, cb) {
 			}					
 		}, function(err) {
 			if (err) return cb(err);
+			if (found) { //If found someone by UTC offset then add only countries without offset info
+				winnersByName = winnersByName.filter(function(place) {
+					return place.offset_raw === null;
+				});	
+			}
 			winners = winners.concat(winnersByName);
 			if (winners.length > 0) {
-				//Sort winners by population ASC
+				//Sort winners by population DESC
 				winners.sort(function(a,b) {
-					return a.population - b.population;
+					return b.population - a.population;
 				});
 				return cb(null, winners[0]);
 			}
