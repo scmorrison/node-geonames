@@ -1,5 +1,6 @@
 var 
 	mongoose = require('mongoose'),
+	async = require('async'),
 	Geoname = require('./models/Geoname');
 
 function Geonames() {
