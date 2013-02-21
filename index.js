@@ -19,5 +19,5 @@ Geonames.prototype.findByNameAndUTCOffset = function(name, UTCOffset, limit, cb)
 }
 
 Geonames.prototype.findByCoords = function(lon, lat, limit, cb) {
-	Geoname.findByName(name, limit, cb);	
+	Geoname.findByCoords(lon, lat, limit, cb);
 }

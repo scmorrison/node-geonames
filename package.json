@@ -4,9 +4,13 @@
     "email": "aartiles@gmail.com"
   },
   "name": "node-geonames",
-  "version": "0.0.1",
-  "description": "A node.js module that both creates a MongoDB collection of geonames.",
+  "version": "0.0.2",
+  "description": "A node.js module that creates a MongoDB collection of Geonames database (http://www.geonames.org/) and allows to find places by name or coordinates.",
   "homepage": "https://github.com/socialbro/node-geonames",
+  "keywords": [
+    "geonames",
+    "geolocation"
+  ],  
   "repository": {
     "type": "git",
     "url": "git@github.com:socialbro/node-geonames.git"

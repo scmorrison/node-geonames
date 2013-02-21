@@ -51,9 +51,11 @@ GeonameSchema.statics.findByNameAndUTCOffset = function(name, UTCOffset, limit, 
 		.exec(cb)
 }
 
-GeonameSchema.statics.findByCoords = function(lon, lot, limit, cb) {
+GeonameSchema.statics.findByCoords = function(lon, lat, limit, cb) {
 	Geoname
-		.find({loc: { $nearSphere: [lon, lat], $maxDistance: 0.01} }, cb);
+		.find({loc: { $nearSphere: [lon, lat], $maxDistance: 0.01} })
+		.limit(limit)
+		.exec(cb);
 }
 
 GeonameSchema.statics.add = function(data, cb) {
