@@ -62,14 +62,14 @@ Geonames.prototype.findByLocation = function(location, utc_offset, cb) {
 				Geoname.findByNameAndUTCOffset(location, utc_offset, 1, function(err, results) {
 					if (err) return next(err);
 					if (results && results.length > 0) {
-						console.log(' >> By UTC Offset ', results[0]);
+						//console.log(' >> By UTC Offset ', results[0]);
 						winners.push(results[0]);
 						found = true;
 					}
 					Geoname.findByName(location, 1, function(err, results) {
 						if (err) return next(err);
 						if (results && results.length > 0) {
-							console.log(' >> By Name ', results[0]);
+							//console.log(' >> By Name ', results[0]);
 							winnersByName.push(results[0]);
 						}
 						next();
