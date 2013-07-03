@@ -121,7 +121,7 @@ Geonames.prototype.findByLocation = function(location, utc_offset, cb) {
 						if (winnersByName.length == 0) return callback();
 						//console.log('winners', winners, winnersByName);
 
-						async.contact(winners, function(winner, next) {
+						async.concat(winners, function(winner, next) {
 							return next(null, winner); 
 						}, function(err, results) {
 							winners = results;
