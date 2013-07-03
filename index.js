@@ -121,12 +121,10 @@ Geonames.prototype.findByLocation = function(location, utc_offset, cb) {
 						if (winnersByName.length == 0) return callback();
 						//console.log('winners', winners, winnersByName);
 
-						async.concat(winners, function(winner, next) {
-							return next(null, winner); 
-						}, function(err, results) {
-							winners = results;
-							return callback();
-						});
+						async.forEach(winnersByName, function(winner, next) {
+							winners.push(winner);
+							return next(); 
+						}, callback);
 					},
 					function stepSortWinners(callback) {
 						//console.log('stepSortWinners');
