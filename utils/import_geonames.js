@@ -24,7 +24,7 @@ function doImport(err) {
 
 	console.log('Creating indexes...');
 	var indexes = [
-		 {collection: Geoname, index: {"alternatenames":1, "timezone.raw": 1, "population":1}}
+		 {collection: Geoname, index: {"alternatenames":1, "offset_raw": 1, "population":1}}
 		,{collection: Geoname, index: {"alternatenames":1, "population":1}}
 	];
 	async.forEachSeries(indexes, function(index, next) {

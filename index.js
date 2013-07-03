@@ -47,61 +47,99 @@ Geonames.prototype.findByLocation = function(location, utc_offset, cb) {
 	else {
 		var winners = [];
 		var winnersByName = [];
+
 		var found = false;
 		var words = getWords(location);
-		if (words.length != 1) words.push(location); //Add the full location as a possible place
+		words = words.slice(0, 3);
 		if (words.length > 2) { 
 			//Generate consecutives word couples
-			var total = words.length - 1;
-			for (var i = 0; i < total; i++) {
-				words.push(words[i] + ' ' + words[i + 1]);
-			}
+			var locations = words.slice(0, 3);
+
+			var i = 0;
+			locations.push(location);  //Add the full location as a possible place
+			async.forEachSeries(words, function(word, next) {
+				if (i == words.length - 1) return next();
+				locations.push(words[i] + ' ' + words[i + 1]);
+				i++;
+				return next();
+			}, function() {
+				processLocations(locations);
+			});
+		}
+		else {
+			if (words.length > 1) words.push(location); //Add the full location as a possible place
+			processLocations(words);
 		} 
-		async.forEachSeries(words, function(location, next) {
-			if (utc_offset !== undefined) {
-				Geoname.findByNameAndUTCOffset(location, utc_offset, 1, function(err, results) {
-					if (err) return next(err);
-					if (results && results.length > 0) {
-						//console.log(' >> By UTC Offset ', results[0]);
-						winners.push(results[0]);
-						found = true;
-					}
+
+		function processLocations(locations) {
+			//console.log('locations', locations);
+			async.forEachSeries(locations, function(location, next) {
+				if (utc_offset !== undefined) {
+					Geoname.findByNameAndUTCOffset(location, utc_offset, 1, function(err, results) {
+						if (err) return next(err);
+						if (results && results.length > 0) {
+							//console.log(' >> By UTC Offset ', results[0]);
+							winners.push(results[0]);
+							found = true;
+						}
+						Geoname.findByName(location, 1, function(err, results) {
+							if (err) return next(err);
+							if (results && results.length > 0) {
+								//console.log(' >> By Name ', results[0]);
+								winnersByName.push(results[0]);
+							}
+							next();
+						});
+					});
+				}
+				else {
 					Geoname.findByName(location, 1, function(err, results) {
 						if (err) return next(err);
 						if (results && results.length > 0) {
 							//console.log(' >> By Name ', results[0]);
-							winnersByName.push(results[0]);
+							winners.push(results[0]);
 						}
 						next();
-					});
-				});
-			}
-			else {
-				Geoname.findByName(location, 1, function(err, results) {
-					if (err) return next(err);
-					if (results && results.length > 0) {
-						//console.log(' >> By Name ', results[0]);
-						winners.push(results[0]);
+					});			
+				}					
+			}, function(err) {
+				if (err) return cb(err);
+				async.series([
+					function stepFilterWinnersByName(callback) {
+						//console.log('stepFilterWinnersByName', winnersByName.length);
+						if (!found || winnersByName.length == 0) return callback();
+						//If found someone by UTC offset then add only countries without offset info
+						async.filter(winnersByName, function(place, next) {
+							return next(null, place.offset_raw === null);
+						}, function(results) {
+							winnersByName = results;
+							callback();
+						});
+					},
+					function stepConcatWinnersByName(callback) {
+						//console.log('stepConcatWinnersByName');
+						if (winnersByName.length == 0) return callback();
+						//console.log('winners', winners, winnersByName);
+
+						async.contact(winners, function(winner, next) {
+							return next(null, winner); 
+						}, function(err, results) {
+							winners = results;
+							return callback();
+						});
+					},
+					function stepSortWinners(callback) {
+						//console.log('stepSortWinners');
+						if (winners.length == 0) return cb();
+						//Sort winners by population DESC
+						async.sortBy(winners, function(item, next) {
+								return next(null, -1 * item.population);
+						}, function(err, results) {
+							return cb(err, results[0]);
+						});
 					}
-					next();
-				});			
-			}					
-		}, function(err) {
-			if (err) return cb(err);
-			if (found) { //If found someone by UTC offset then add only countries without offset info
-				winnersByName = winnersByName.filter(function(place) {
-					return place.offset_raw === null;
-				});	
-			}
-			winners = winners.concat(winnersByName);
-			if (winners.length > 0) {
-				//Sort winners by population DESC
-				winners.sort(function(a,b) {
-					return b.population - a.population;
-				});
-				return cb(null, winners[0]);
-			}
-			else return cb();
-		});
+				]);
+			});
+		}
 	}
 }

@@ -7,6 +7,29 @@ var db = mongoose.connect("mongodb://localhost/socialbro_development");
 
 describe("------ Geoname: ", function(){
 
+  describe("findByNameAndUTCOffset", function(){   
+    it("Madrid is ES", function(done){
+      Geoname.findByNameAndUTCOffset('Madrid', 1, 10, function(err, results) {        
+        should.not.exist(err);
+        should.exist(results);
+        results.length.should.not.be.eql(0);
+        results[0].country_code.should.be.eql('ES');
+        done();
+      });
+    });
+
+    it("Córdoba is AR", function(done){
+      Geoname.findByNameAndUTCOffset('Córdoba', -3, 10, function(err, results) {        
+
+        should.not.exist(err);
+        should.exist(results);
+        results.length.should.not.be.eql(0);
+        results[0].country_code.should.be.eql('AR');
+        done();
+      });
+    });
+ });
+
   describe("findByName", function(){   
     it("España is ES", function(done){
       Geoname.findByName('España', 10, function(err, results) {        
