@@ -110,7 +110,7 @@ Geonames.prototype.findByLocation = function(location, utc_offset, cb) {
 						if (!found || winnersByName.length == 0) return callback();
 						//If found someone by UTC offset then add only countries without offset info
 						async.filter(winnersByName, function(place, next) {
-							return next(null, place.offset_raw === null);
+							return next(place.offset_raw === null);
 						}, function(results) {
 							winnersByName = results;
 							callback();
