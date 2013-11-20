@@ -142,4 +142,8 @@ GeonameSchema.statics.doImport = function(file, cb) {
 		}); 			
 }
 
-exports = module.exports = Geoname = mongoose.model('Geoname', GeonameSchema);
+exports = module.exports = function(uri) {
+	var conn = mongoose.createConnection(uri);
+	return conn.model('Geoname', GeonameSchema);
+}
+

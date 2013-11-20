@@ -1,7 +1,8 @@
 var 
 	mongoose = require('mongoose'),
 	async = require('async'),
-	Geoname = require('./models/geoname');
+	Geoname,
+	GeonameFactory = require('./models/geoname');
 
 function Geonames() {
 }
@@ -15,7 +16,8 @@ function getWords(s) {
 }
 
 Geonames.prototype.connect = function(mongodb) {
-	return mongoose.connect(mongodb);
+	GeoName = GeonameFactory(mongodb);
+	return GeoName;
 }
 
 Geonames.prototype.findByName = function(name, limit, cb) {
