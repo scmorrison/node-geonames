@@ -37,6 +37,7 @@ GeonameSchema.statics.findByName = function(name, limit, cb) {
 		//.sort('feature_class', 'ascending')
 		.sort('population', 'descending')
 		.limit(limit)
+		.slaveOk()
 		.exec(cb)
 }
 
@@ -48,6 +49,7 @@ GeonameSchema.statics.findByNameAndUTCOffset = function(name, UTCOffset, limit, 
 		.where('offset_raw', UTCOffset)
 		.sort('population', 'descending')
 		.limit(limit)
+		.slaveOk()
 		.exec(cb)
 }
 
@@ -55,6 +57,7 @@ GeonameSchema.statics.findByCoords = function(lon, lat, limit, cb) {
 	Geoname
 		.find({loc: { $nearSphere: [lon, lat], $maxDistance: 0.01} })
 		.limit(limit)
+		.slaveOk()
 		.exec(cb);
 }
 
