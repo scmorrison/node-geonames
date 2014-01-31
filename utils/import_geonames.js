@@ -1,7 +1,7 @@
 var
 	mongoose = require('mongoose'),
 	async = require('async'), 	
-	Geoname = require('../models/Geoname');
+	Geoname = require('../models/geoname.js');
 
 var argv = require('optimist')
   .usage('Usage: $0 -f [geonamesFile] -d [mongodb://localhost/database] -r false')
@@ -22,31 +22,11 @@ function doImport(err) {
 		process.exit();
 	}
 
-	console.log('Creating indexes...');
-	var indexes = [
-		 {collection: Geoname, index: {"alternatenames":1, "offset_raw": 1, "population":1}}
-		,{collection: Geoname, index: {"alternatenames":1, "population":1}}
-	];
-	async.forEachSeries(indexes, function(index, next) {
-		var options = index.options || {};
-		index.collection.collection.ensureIndex(index.index, options, function(err, name) {
-			if (err) next(err);
-			console.log('created: ', name);
-			next();
-		});
-		
-	}, function(err) {
-		if (err) throw err;
-		console.log('All done!');
-		
-	});	
-
-
-	Geoname.doImport(argv.file, function(err, count, imported) {
+	mongoose.model('Geoname').doImport(argv.file, function(err, count, imported) {
 		if (err) console.log(err);
 		console.log('Number of names imported: ' + count);
 		process.exit();
 	});
 }	
 
-if (argv.reset === 'true') { Geoname.remove(doImport); } else doImport();
+if (argv.reset === 'true') { mongoose.model('Geoname').remove(doImport); } else doImport();

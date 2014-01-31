@@ -15,10 +15,10 @@ var GeonameSchema = new Schema({
 	feature_code      : String, //see http://www.geonames.org/export/codes.html, varchar(10)
 	country_code      : String, //ISO-3166 2-letter country code, 2 characters
 	//cc2               : String, //alternate country codes, comma separated, ISO-3166 2-letter country code, 60 characters
-	//admin1_code       : String, //fipscode (subject to change to iso code), see exceptions below, see file admin1Codes.txt for display names of this code; varchar(20)
-	//admin2_code       : String, //code for the second administrative division, a county in the US, see file admin2Codes.txt; varchar(80) 
-	//admin3_code       : String, //code for third level administrative division, varchar(20)
-	//admin4_code       : String, //code for fourth level administrative division, varchar(20)
+	admin1_code       : String, //fipscode (subject to change to iso code), see exceptions below, see file admin1Codes.txt for display names of this code; varchar(20)
+	admin2_code       : String, //code for the second administrative division, a county in the US, see file admin2Codes.txt; varchar(80) 
+	admin3_code       : String, //code for third level administrative division, varchar(20)
+	admin4_code       : String, //code for fourth level administrative division, varchar(20)
 	population        : Number, //bigint (8 byte int) 
 	//elevation         : Number, //in meters, integer
 	//dem               : Number, //digital elevation model, srtm3 or gtopo30, average elevation of 3''x3'' (ca 90mx90m) or 30''x30'' (ca 900mx900m) area in meters, integer. srtm processed by cgiar/ciat.
@@ -28,6 +28,8 @@ var GeonameSchema = new Schema({
 	offset_raw		  : Number  //rawOffset (independant of DST)
 	//modification_date : Date    //date of last modification in yyyy-MM-dd format
 });
+
+GeonameSchema.index({"alternatenames":1, "offset_raw": 1, "population":1}, {"alternatenames":1, "population":1});
 
 GeonameSchema.statics.findByName = function(name, limit, cb) {
 	Geoname
@@ -71,6 +73,7 @@ GeonameSchema.statics.doImport = function(file, cb) {
 	csv()
 		.from.path(file, {
 		  delimiter : '\t',
+      quote : '',
 		  columns : [
 		    '_id', 
 		    'name', 
@@ -79,18 +82,18 @@ GeonameSchema.statics.doImport = function(file, cb) {
 		    'latitude', 
 		    'longitude', 
 		    'feature_class', 
-			'feature_code',
-			'country_code',
-			'cc2',
-			'admin1_code',
-			'admin2_code',
-			'admin3_code',
-			'admin4_code',
-			'population',
-			'elevation',
-			'dem',
-			'timezone',
-			'modification_date'				    
+        'feature_code',
+        'country_code',
+        'cc2',
+        'admin1_code',
+        'admin2_code',
+        'admin3_code',
+        'admin4_code',
+        'population',
+        'elevation',
+        'dem',
+        'timezone',
+        'modification_date'				    
 		  ]
 		})
 		.transform(function(data, index) {
@@ -119,6 +122,10 @@ GeonameSchema.statics.doImport = function(file, cb) {
 		    	feature_class: data.feature_class,
 		    	feature_code: data.feature_code,
 		    	country_code: data.country_code,
+			    admin1_code: data.admin1_code,
+          admin2_code: data.admin2_code,
+          admin3_code: data.admin3_code,
+          admin4_code: data.admin4_code,
 		    	population: data.population,
 		    	timezone: data.timezone? data.timezone.toLowerCase() : '',
 		    	offset_gmt: timezone ? timezone.gmt_offset : null,
@@ -136,11 +143,17 @@ GeonameSchema.statics.doImport = function(file, cb) {
 		.on('end', function(count) {		  
 		  cb(null, count, imported);
 		})
+    /*.on('uncaughtException', function (err) {
+        console.log('Caught exception: ' + err);
+    })*/
 		.on('error', function(err) {
-		  console.error(err);
-		  cb(err);
+		  console.log(err);
+      //return next(err);
+		  cb(resume);
 		}); 			
 }
+
+Geoname = mongoose.model('Geoname', GeonameSchema);
 
 exports = module.exports = function(uri) {
 	var conn = mongoose.createConnection(uri);
