@@ -1,19 +1,19 @@
 {
   "author": {
-    "name": "Alfredo Artiles",
-    "email": "aartiles@gmail.com"
+    "name": "Sam Morrison",
+    "email": "sam@cnstechgroup.com"
   },
   "name": "node-geonames",
-  "version": "0.0.14",
-  "description": "A node.js module that creates a MongoDB collection of Geonames database (http://www.geonames.org/) and allows to find places by name or coordinates.",
-  "homepage": "https://github.com/socialbro/node-geonames",
+  "version": "0.0.15",
+  "description": "A node.js module that creates a MongoDB collection of Geonames database (http://www.geonames.org/) and allows to find places by name or coordinates. (forked from SocialBro/node-geonames)",
+  "homepage": "https://github.com/scmorrison/node-geonames",
   "keywords": [
     "geonames",
     "geolocation"
   ],  
   "repository": {
     "type": "git",
-    "url": "git@github.com:socialbro/node-geonames.git"
+    "url": "git@github.com:scmorrison/node-geonames.git"
   },  
   "dependencies": {
     "optimist": "0.3.x",
